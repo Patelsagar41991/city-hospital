@@ -1,159 +1,169 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
+import { Container, Row, Col, FormGroup, Button } from 'reactstrap'
 import * as yup from 'yup';
-import { useFormik, Formik, Form } from 'formik';
-import { useDispatch } from 'react-redux';
-import { signinAction } from '../redux/action/Action';
+import { Formik, Form, useFormik, Field } from 'formik';
+import { useDispatch } from "react-redux"
+import { authAction, signinAction, signUpAction } from '../redux/action/Action';
 
-function Login(props) {
-  const [login, setLogin] = useState("Login")
+const LoginSignup = () => {
+  const [userType, setUserType] = useState('Login')
+  const [reset, setReset] = useState(false);
 
-  const [reset, setReset] = useState(false)
-  const dispatch = useDispatch()
-
-  let schemaobj, intival;
-
-  if (login === "Login" && !reset) {
-    schemaobj = {
-      email: yup.string().required("required").email("please enter valid email id"),
-      password: yup.string().min(6, "minimum 6 character required").required("required")
+  let schemaObj, initVal;
+  if (reset) {
+    schemaObj = {
+      email: yup.string().email("Please Enter Valid Email").required("Plaese Enter Email")
     }
-    intival = {
+    initVal = {
       email: '',
-      password: ''
     }
-  } else if (login === "signup" && !reset) {
-    schemaobj = {
-      name: yup.string().required("required"),
-      email: yup.string().required("required").email("please enter valid email id"),
-      password: yup.string().min(6, "minimum 6 character required").required("required")
-    }
-    intival = {
-      name: '',
-      email: '',
-      password: ''
-    }
-  }else{
-    schemaobj = {
-      email: yup.string().required("required").email("please enter valid email id")
-    }
-    intival = {
-      email: ''
+  } else {
+    if (userType === "Login") {
+      schemaObj = {
+        email: yup.string().email("Please Enter Valid Email").required("Plaese Enter Email"),
+        password: yup.string().required("Please Enter Password"),
+      }
+      initVal = {
+        email: '',
+        password: '',
+      }
+    } else {
+      schemaObj = {
+        name: yup.string().required("Please Enter Name"),
+        email: yup.string().email("Please Enter Valid Email").required("Plaese Enter Email"),
+        password: yup.string().required("Please Enter Password"),
+      }
+      initVal = {
+        name: '',
+        email: '',
+        password: '',
+      }
     }
   }
 
-  let schema = yup.object().shape(schemaobj);
+  const dispatch = useDispatch()
+  let schema = yup.object().shape(schemaObj);
 
-  const formikobj = useFormik({
-    initialValues: intival,
+  const handleLogin = (data) => {
+    // localStorage.setItem("user", "Loged in");
+    dispatch(signinAction(data))
+  }
+
+  const handleSignin = (data) => {
+    // console.log("view : ", data)
+    dispatch(signUpAction(data))
+  }
+
+  const formik = useFormik({
+    initialValues: initVal,
     validationSchema: schema,
-
-    enableReinitialize: true,
-    onSubmit: (values, action) => {
-      // alert(JSON.stringify(values, null, 2));
-      action.resetForm()
-      dispatch(signinAction(values))
-
+    onSubmit: values => {
+      if (userType === "Login") {
+        handleLogin(values);
+      } else {
+        handleSignin(values);
+      }
     },
+    enableReinitialize: true,
   });
 
-  const handleSubmitData = () => {
-    console.log(values);
-    formikobj.resetForm()
-    formikobj.setValues({});
-    console.log(values);
-  }
-
-  const { handleSubmit, handleChange, errors, handleBlur, touched, values } = formikobj
-
-
+  const { errors, touched, handleSubmit, handleBlur, handleChange, values } = formik
   return (
-    <section id="appointment" className="appointment">
-      <div className="container">
-        <div className="section-title">
-          {reset ?
-            <h2>
-              forget password
-            </h2>
-            :
-            login === "Login" ?
-              <h2>Login</h2>
-              :
-              <h2>signup</h2>
-          }
-
-
-        </div>
-        <Formik initialValues={intival} values={formikobj}>
-          <Form onSubmit={handleSubmit} className="php-email-form">
-
+    <>
+      <section id="login" className="login">
+        <Container>
+          <div className="section-title">
             {
-              reset ?
-                null
-                :
-                login === "Login" ?
-                  null
+              !reset ?
+                userType === 'Login' ?
+                  <h2>Login</h2>
                   :
-                  <div className="row">
-                    <div className="col-md-4 form-group mx-auto">
-                      <input type="text" name="name" className="form-control" id="name" placeholder="Your Name" onChange={handleChange} onBlur={handleBlur} value={values.name} />
-                      <p className='text-danger'>{errors.name && touched.name ? errors.name : ''}</p>
-
-                    </div>
-                  </div>
+                  <h2>Signup</h2>
+                :
+                <h2>Reset Password</h2>
             }
-            <div className="row">
-              <div className="col-md-4 form-group mt-3 mt-md-0 mx-auto">
-                <input type="email" className="form-control" name="email" id="email" placeholder="Your Email" onChange={handleChange} onBlur={handleBlur} value={values.email} />
-                <p className='text-danger'>{errors.email && touched.email ? errors.email : ''}</p>
+          </div>
+          <Formik values={formik}>
+            <Form onSubmit={handleSubmit} className="php-email-form">
+              <Row className="d-flex justify-content-center">
+                {
+                  userType === 'Login' ?
+                    null
+                    :
+                    <Col md={8}>
+                      <FormGroup className="mt-3 mt-md-0">
+                        <input type="text" className="form-control" name="name" id="name" placeholder="Your Name" onChange={handleChange} value={values.name || ''} onBlur={handleBlur} />
+                        {errors.name && touched.name ? (
+                          <div className="validate">{errors.name}</div>
+                        ) : null}
+                      </FormGroup>
+                    </Col>
+                }
+                <Col md={8}>
+                  <FormGroup className="mt-3 mt-md-0">
+                    <Field type="email" className="form-control" name="email" id="email" placeholder="Your Email" onChange={handleChange} value={values.email || ''} onBlur={handleBlur} />
+                    {errors.email && touched.email ? (
+                      <div className="validate">{errors.email}</div>
+                    ) : null}
+                  </FormGroup>
+                </Col>
+                {
+                  !reset ?
+                    <Col md={8}>
+                      <FormGroup className="mt-3 mt-md-0">
+                        <Field type="password" name="password" className="form-control" id="password" placeholder="Your Password" autoComplete="off" onChange={handleChange} value={values.password || ''} onBlur={handleBlur} />
 
+                        {errors.password && touched.password ? (
+                          <div className="validate">{errors.password}</div>
+                        ) : null}
+                      </FormGroup>
+                    </Col>
+                    :
+                    null
+                }
+              </Row>
+              <div className="text-center mb-3">
+                {
+                  !reset ?
+                    userType === 'Login' ?
+                      <Button type="submit" className='shadow-none'>Login</Button> : <Button type="submit" className='shadow-none'>Signup</Button>
+                    :
+                    <Button type="submit" className='shadow-none'>Submit</Button>
+                }
               </div>
-            </div>
-
-            {
-              reset ?
-                null
-                :
-                <div className="row">
-                  <div className="col-md-4 form-group mt-3 mt-md-0 mx-auto">
-                    <input type="password" className="form-control" name="password" id="password" placeholder="Your password" onChange={handleChange} onBlur={handleBlur} value={values.password} />
-                    <p className='text-danger'>{errors.password && touched.password ? errors.password : ''}</p>
+              <div className="text-center mb-3">
+                {
+                  userType === 'Login' ?
+                    <div>
+                      <p className="d-inline mt-2">Create a new account: </p>
+                      <a href='js:' onClick={() => { setUserType('Signup'); setReset(false) }} className='text-primary text-decoration-underline'>Signup</a>
+                    </div>
+                    :
+                    <div>
+                      <p className="d-inline mt-2">Already have an account? </p>
+                      <a href='js:' onClick={() => { setUserType('Login'); setReset(false) }} className='text-primary text-decoration-underline'>Login</a>
+                    </div>
+                }
+              </div>
+              {
+                userType === 'Login' ?
+                  <div className="text-center mb-3">
+                    {
+                      !reset ?
+                        <a href='js:' onClick={() => { setReset(true) }} className='text-primary text-decoration-underline'>Forgot Password?</a>
+                        :
+                        null
+                    }
                   </div>
-                </div>
-
-            }
-            {
-              login === "Login" ?
-                <div>
-                  Create a new account  <button type='button' onClick={() => { setLogin("signup"); setReset(false) }}>Signup</button>
-                  <br></br>
-
-                </div>
-                :
-                <div>
-                  Already have an account  <button type='button' onClick={() => { setLogin("Login"); setReset(false) }}>Login</button>
-                </div>
-            }
-            <button type='button' onClick={() => { setReset(true) }}>forget password</button>
-
-            {
-              reset ?
-                <div className="text-center"><button type="submit">submit</button></div>
-                :
-                login === "Login" ?
-                  <div className="text-center"><button type="submit">Login</button></div>
                   :
-                  <div className="text-center"><button type="submit">Signup</button></div>
-            }
-
-
-
-          </Form>
-        </Formik>
-
-      </div>
-    </section>
-
-  );
+                  null
+              }
+            </Form>
+          </Formik>
+        </Container>
+      </section>
+    </>
+  )
 }
 
-export default Login;
+export default LoginSignup
