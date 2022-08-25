@@ -21,7 +21,7 @@ function* signIn(action) {
        console.log(user)
    } catch (e) {
        if (e.payload === "auth/wrong-password") {
-           console.log("Wrong E-mail or password.")
+           console.log("please correct email and password")
        }
    }
 }
