@@ -1,29 +1,24 @@
-import { all, call, put, takeEvery, takeLatest } from 'redux-saga/effects';
+import { all, call, put, takeEvery } from 'redux-saga/effects';
 import { AuthApi } from '../../context/AuthApi';
+import { setAlert } from '../action/alter';
 import * as ActionTypes from '../ActionType'
 
 
 function* SignUp(action) {
    try {
       const user = yield call(AuthApi, action.payload);
-        console.log(user)
-   } catch (e) {
-      if (e.payload === "auth/email already in used") {
-         console.log("This email is all ready use")
-     }else{
-      console.log("This email ")
-     }
-   }
+      yield put(setAlert({ text: user.payload, color: "success" }))
+  } catch (e) {
+      yield put(setAlert({ text: e.payload, color: "error" }))
+  }
 }
 function* signIn(action) {
    try {
-       const user = yield call(AuthApi, action.payload);
-       console.log(user)
-   } catch (e) {
-       if (e.payload === "auth/wrong-password") {
-           console.log("please correct email and password")
-       }
-   }
+      const user = yield call(AuthApi, action.payload);
+      yield put(setAlert({ text: user.payload, color: "success" }))
+  } catch (e) {
+      yield put(setAlert({ text: e.payload, color: "error" }))
+  }
 }
 function* signUpWatcher() {
   yield takeEvery( ActionTypes.SIGN_UP, SignUp);
