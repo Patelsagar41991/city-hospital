@@ -9,9 +9,9 @@ function* SignUp(action) {
         console.log(user)
    } catch (e) {
       if (e.payload === "auth/email already in used") {
-         console.log("Tthis email is all ready use")
+         console.log("This email is all ready use")
      }else{
-      console.log("Tthis email ")
+      console.log("This email ")
      }
    }
 }
