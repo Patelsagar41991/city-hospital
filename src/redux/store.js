@@ -5,6 +5,11 @@ import { RootAuth } from './reducer/AuthReducer'
 import { sagaAll } from './saga/AllSaga'
 
 const sagaMiddleware = createSagaMiddleware()
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['auth']
+}
 const Middleware = [thunk, sagaMiddleware]
 export const store = createStore(
   RootAuth,
